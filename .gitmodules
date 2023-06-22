@@ -2,3 +2,6 @@
 	path = thirdparty/can
 	url = git@github.com:eagletrt/can.git
 	branch = build-evo
+[submodule "thirdparty/srec"]
+	path = thirdparty/srec
+	url = git@github.com:arkku/srec.git
