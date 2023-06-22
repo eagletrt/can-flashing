@@ -3,6 +3,12 @@
 
 #include <string.h>
 
+uint16_t tx_ids[FLASH_TYPE_COUNT];
+uint16_t rx_ids[FLASH_TYPE_COUNT];
+uint16_t jump_ids[FLASH_TYPE_COUNT];
+uint16_t request_ids[FLASH_TYPE_COUNT];
+uint16_t response_ids[FLASH_TYPE_COUNT];
+
 char* flash_type_name(FLASH_TYPE value){
   switch (value){
     case FLASH_TYPE_BMS_HV:

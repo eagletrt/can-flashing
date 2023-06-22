@@ -257,7 +257,7 @@ state_t do_flashing(state_data_t *data) {
   ){
     message_data[0] = 0x01;
   }
-  can_send(jump_ids[data->flash_device], message_data, 8, &data->can);
+  can_send(jump_ids[data->flash_device], (char*)message_data, 8, &data->can);
 
   // bootcommander
   char buff[100];
