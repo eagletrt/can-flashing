@@ -28,6 +28,7 @@ typedef struct{
   FLASH_TYPE flash_device;
   char* binary_path;
 }state_data_t;
+#define COMMAND_BUFER_SIZE 1024
 
 // NOTHING SHALL BE CHANGED AFTER THIS LINE!
 

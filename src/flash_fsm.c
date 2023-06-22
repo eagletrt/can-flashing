@@ -77,7 +77,7 @@ state_t do_setup_can(state_data_t *data) {
   printf("[FSM] In state setup_can\n");
   /* Your Code Here */
 
-  can_init("vcan1", &data->can);
+  can_init("can1", &data->can);
 
   if(can_open_socket(&data->can) < 0)
     next_state = STATE_ERROR;
@@ -126,11 +126,15 @@ state_t do_flash_request(state_data_t *data) {
   /* Your Code Here */
   if(request_ids[data->flash_device] != UINT16_MAX){
     uint8_t frame[1];
-    if(can_send(request_ids[data->flash_device], (char*)frame, 1, &data->can) <= 0)
-      next_state = STATE_ERROR;
-    else
-      next_state = STATE_FLASH_WAIT;
+    for(int i = 0; i < 10; i++){
+	    if(can_send(request_ids[data->flash_device], (char*)frame, 1, &data->can) <= 0)
+	      next_state = STATE_ERROR;
+	    else
+	      next_state = STATE_FLASH_WAIT;
+	    usleep(100);
+    }
   } else {
+    printf("[FSM] No flash_request procedure needed.\n");
     next_state = STATE_FLASHING;
   }
   
@@ -260,13 +264,29 @@ state_t do_flashing(state_data_t *data) {
   can_send(jump_ids[data->flash_device], (char*)message_data, 8, &data->can);
 
   // bootcommander
-  char buff[100];
-  snprintf(buff, 100, "bootcommander -t=xcp_can -d=can1 -b=1000000 -tid=%x -rid=%x %s",
+  char buff[COMMAND_BUFER_SIZE];
+  snprintf(buff, COMMAND_BUFER_SIZE, "/home/control/can-test/Host/bootcommander -t=xcp_can -d=%s -b=1000000 -tid=%x -rid=%x %s",
+    can_get_device(&data->can),
     tx_ids[data->flash_device],
     rx_ids[data->flash_device],
     data->binary_path
   );
+  printf("[FSM] launching bootcommander:\n%s\n", buff);
+  fflush(stdout);
+  usleep(1000);
   system(buff);
+
+  if(
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_0 || 
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_1 ||
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_2 || 
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_3 || 
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_4 ||
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_5
+  ){
+    message_data[0] = 0x00;
+    can_send(jump_ids[data->flash_device], (char*)message_data, 8, &data->can);
+  }
   
 end:
   switch (next_state) {
