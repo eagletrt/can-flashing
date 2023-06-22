@@ -11,9 +11,10 @@ The finite state machine has:
   8 states
   0 transition functions
 ******************************************************************************/
-
-#include <syslog.h>
-#include "flash_fsm.h"
+#include <time.h>
+#include <sys/time.h>
+#include "inc/flash_fsm.h"
+#include "can/lib/primary/primary_network.h"
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
@@ -52,14 +53,14 @@ state_func_t *const state_table[NUM_STATES] = {
 state_t do_start(state_data_t *data) {
   state_t next_state = STATE_SETUP_CAN;
   
-  syslog(LOG_INFO, "[FSM] In state start");
+  printf("[FSM] In state start\n");
   /* Your Code Here */
   
   switch (next_state) {
     case STATE_SETUP_CAN:
       break;
     default:
-      syslog(LOG_WARNING, "[FSM] Cannot pass from start to %s, remaining in this state", state_names[next_state]);
+      printf("[FSM] Cannot pass from start to %s, remaining in this state\n", state_names[next_state]);
       next_state = NO_CHANGE;
   }
   
@@ -72,15 +73,22 @@ state_t do_start(state_data_t *data) {
 state_t do_setup_can(state_data_t *data) {
   state_t next_state = STATE_ERROR;
   
-  syslog(LOG_INFO, "[FSM] In state setup_can");
+  printf("[FSM] In state setup_can\n");
   /* Your Code Here */
+
+  can_init("vcan1", &data->can);
+
+  if(can_open_socket(&data->can) < 0)
+    next_state = STATE_ERROR;
+  else
+    next_state = STATE_FLASH_REQUEST;
   
   switch (next_state) {
     case STATE_ERROR:
     case STATE_FLASH_REQUEST:
       break;
     default:
-      syslog(LOG_WARNING, "[FSM] Cannot pass from setup_can to %s, remaining in this state", state_names[next_state]);
+      printf("[FSM] Cannot pass from setup_can to %s, remaining in this state\n", state_names[next_state]);
       next_state = NO_CHANGE;
   }
   
@@ -93,14 +101,14 @@ state_t do_setup_can(state_data_t *data) {
 state_t do_error(state_data_t *data) {
   state_t next_state = STATE_END;
   
-  syslog(LOG_INFO, "[FSM] In state error");
+  printf("[FSM] In state error\n");
   /* Your Code Here */
   
   switch (next_state) {
     case STATE_END:
       break;
     default:
-      syslog(LOG_WARNING, "[FSM] Cannot pass from error to %s, remaining in this state", state_names[next_state]);
+      printf("[FSM] Cannot pass from error to %s, remaining in this state\n", state_names[next_state]);
       next_state = NO_CHANGE;
   }
   
@@ -113,15 +121,25 @@ state_t do_error(state_data_t *data) {
 state_t do_flash_request(state_data_t *data) {
   state_t next_state = STATE_ERROR;
   
-  syslog(LOG_INFO, "[FSM] In state flash_request");
+  printf("[FSM] In state flash_request\n");
   /* Your Code Here */
+  if(request_ids[data->flash_device] != UINT16_MAX){
+    uint8_t frame[1];
+    if(can_send(request_ids[data->flash_device], (char*)frame, 1, &data->can) <= 0)
+      next_state = STATE_ERROR;
+    else
+      next_state = STATE_FLASH_WAIT;
+  } else {
+    next_state = STATE_FLASHING;
+  }
   
   switch (next_state) {
     case STATE_ERROR:
+    case STATE_FLASHING:
     case STATE_FLASH_WAIT:
       break;
     default:
-      syslog(LOG_WARNING, "[FSM] Cannot pass from flash_request to %s, remaining in this state", state_names[next_state]);
+      printf("[FSM] Cannot pass from flash_request to %s, remaining in this state\n", state_names[next_state]);
       next_state = NO_CHANGE;
   }
   
@@ -134,14 +152,14 @@ state_t do_flash_request(state_data_t *data) {
 state_t do_end(state_data_t *data) {
   state_t next_state = NO_CHANGE;
   
-  syslog(LOG_INFO, "[FSM] In state end");
+  printf("[FSM] In state end\n");
   /* Your Code Here */
   
   switch (next_state) {
     case NO_CHANGE:
       break;
     default:
-      syslog(LOG_WARNING, "[FSM] Cannot pass from end to %s, remaining in this state", state_names[next_state]);
+      printf("[FSM] Cannot pass from end to %s, remaining in this state\n", state_names[next_state]);
       next_state = NO_CHANGE;
   }
   
@@ -153,10 +171,49 @@ state_t do_end(state_data_t *data) {
 // valid return states: NO_CHANGE, STATE_ERROR, STATE_FLASH_WAIT, STATE_FLASHING
 state_t do_flash_wait(state_data_t *data) {
   state_t next_state = NO_CHANGE;
+  double interval;
+  static struct timeval t2, t1 = {
+    .tv_sec = 0,
+    .tv_usec = 0
+  };
+  gettimeofday(&t2, NULL);
+
+  interval  = (t2.tv_sec  - t1.tv_sec)  * 1000.0;
+  interval += (t2.tv_usec - t1.tv_usec) / 1000.0;
+
+  if(t1.tv_sec == 0 && t1.tv_usec == 0){
+    t1 = t2;
+  } else if (interval >= 1e3) {
+    next_state = STATE_ERROR;
+    goto end;
+  }
   
-  syslog(LOG_INFO, "[FSM] In state flash_wait");
+  printf("[FSM] In state flash_wait\n");
   /* Your Code Here */
-  
+  struct can_frame frame;
+
+  if(can_receive(&frame, &data->can) < 0){
+    next_state = STATE_ERROR;
+    goto end;
+  }
+  if(frame.can_id != PRIMARY_LV_CAN_FLASH_ACK_FRAME_ID){
+    next_state = NO_CHANGE;
+    goto end;
+  }
+
+  primary_lv_can_flash_ack_t ack;
+  primary_lv_can_flash_ack_unpack(&ack, frame.data, frame.can_dlc);
+  if(ack.response == primary_lv_can_flash_ack_response_PREPARING_TO_FLASH){
+    next_state = NO_CHANGE;
+  }else if (ack.response == primary_lv_can_flash_ack_response_FLASH){
+    next_state = STATE_FLASHING;
+  } else if (ack.response == primary_lv_can_flash_ack_response_NO_FLASH) {
+    next_state = STATE_ERROR;
+  } else {
+    next_state = STATE_ERROR;
+  }
+
+end:
   switch (next_state) {
     case NO_CHANGE:
     case STATE_ERROR:
@@ -164,7 +221,7 @@ state_t do_flash_wait(state_data_t *data) {
     case STATE_FLASHING:
       break;
     default:
-      syslog(LOG_WARNING, "[FSM] Cannot pass from flash_wait to %s, remaining in this state", state_names[next_state]);
+      printf("[FSM] Cannot pass from flash_wait to %s, remaining in this state\n", state_names[next_state]);
       next_state = NO_CHANGE;
   }
   
@@ -177,7 +234,7 @@ state_t do_flash_wait(state_data_t *data) {
 state_t do_flashing(state_data_t *data) {
   state_t next_state = STATE_ERROR;
   
-  syslog(LOG_INFO, "[FSM] In state flashing");
+  printf("[FSM] In state flashing\n");
   /* Your Code Here */
   
   switch (next_state) {
@@ -185,7 +242,7 @@ state_t do_flashing(state_data_t *data) {
     case STATE_SUCCESS:
       break;
     default:
-      syslog(LOG_WARNING, "[FSM] Cannot pass from flashing to %s, remaining in this state", state_names[next_state]);
+      printf("[FSM] Cannot pass from flashing to %s, remaining in this state\n", state_names[next_state]);
       next_state = NO_CHANGE;
   }
   
@@ -198,14 +255,14 @@ state_t do_flashing(state_data_t *data) {
 state_t do_success(state_data_t *data) {
   state_t next_state = STATE_END;
   
-  syslog(LOG_INFO, "[FSM] In state success");
+  printf("[FSM] In state success\n");
   /* Your Code Here */
   
   switch (next_state) {
     case STATE_END:
       break;
     default:
-      syslog(LOG_WARNING, "[FSM] Cannot pass from success to %s, remaining in this state", state_names[next_state]);
+      printf("[FSM] Cannot pass from success to %s, remaining in this state\n", state_names[next_state]);
       next_state = NO_CHANGE;
   }
   
@@ -239,7 +296,7 @@ state_t run_state(state_t cur_state, state_data_t *data) {
 int main() {
   state_t cur_state = STATE_START;
   openlog("SM", LOG_PID | LOG_PERROR, LOG_USER);
-  syslog(LOG_INFO, "Starting SM");
+  printf("Starting SM");
   do {
     cur_state = run_state(cur_state, NULL);
     sleep(1);

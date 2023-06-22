@@ -16,10 +16,17 @@ The finite state machine has:
 #define FLASH_FSM_H
 #include <stdlib.h>
 
+#include "inc/can.h"
+#include "inc/flash_type.h"
+
 // State data object
 // By default set to void; override this typedef or load the proper
 // header if you need
-typedef void state_data_t;
+// typedef void state_data_t;
+typedef struct{
+  can_t can;
+  FLASH_TYPE flash_device;
+}state_data_t;
 
 // NOTHING SHALL BE CHANGED AFTER THIS LINE!
 
@@ -28,7 +35,7 @@ typedef enum {
   STATE_START = 0,  
   STATE_SETUP_CAN,  
   STATE_ERROR,  
-  STATE_FLASH_REQUEST,  
+  STATE_FLASH_REQUEST,
   STATE_END,  
   STATE_FLASH_WAIT,  
   STATE_FLASHING,  
