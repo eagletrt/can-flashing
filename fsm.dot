@@ -1,0 +1,14 @@
+digraph G {
+  start -> setup_can;
+  setup_can -> error;
+  setup_can -> flash_request;
+  flash_request -> error;
+  flash_request -> flash_wait;
+  flash_wait -> flash_wait;
+  flash_wait -> error;
+  flash_wait -> flashing;
+  flashing -> error;
+  flashing -> success;
+  error -> end;
+  success -> end;
+}
