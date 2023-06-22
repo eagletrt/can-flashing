@@ -12,6 +12,7 @@ The finite state machine has:
   0 transition functions
 ******************************************************************************/
 #include <time.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include "inc/flash_fsm.h"
 #include "can/lib/primary/primary_network.h"
@@ -196,7 +197,11 @@ state_t do_flash_wait(state_data_t *data) {
     next_state = STATE_ERROR;
     goto end;
   }
-  if(frame.can_id != PRIMARY_LV_CAN_FLASH_ACK_FRAME_ID){
+  if (response_ids[data->flash_device] == UINT16_MAX){
+    next_state = STATE_FLASHING;
+    goto end;
+  }
+  if(frame.can_id != response_ids[data->flash_device]){
     next_state = NO_CHANGE;
     goto end;
   }
@@ -236,7 +241,34 @@ state_t do_flashing(state_data_t *data) {
   
   printf("[FSM] In state flashing\n");
   /* Your Code Here */
+  if(jump_ids[data->flash_device] == UINT16_MAX){
+    next_state = STATE_ERROR;
+    goto end;
+  }
+
+  uint8_t message_data[8] = {0};
+  if(
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_0 || 
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_1 ||
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_2 || 
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_3 || 
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_4 ||
+    data->flash_device == FLASH_TYPE_BMS_CELLBOARD_5
+  ){
+    message_data[0] = 0x01;
+  }
+  can_send(jump_ids[data->flash_device], message_data, 8, &data->can);
+
+  // bootcommander
+  char buff[100];
+  snprintf(buff, 100, "bootcommander -t=xcp_can -d=can1 -b=1000000 -tid=%x -rid=%x %s",
+    tx_ids[data->flash_device],
+    rx_ids[data->flash_device],
+    data->binary_path
+  );
+  system(buff);
   
+end:
   switch (next_state) {
     case STATE_ERROR:
     case STATE_SUCCESS:

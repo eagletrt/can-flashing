@@ -26,6 +26,7 @@ The finite state machine has:
 typedef struct{
   can_t can;
   FLASH_TYPE flash_device;
+  char* binary_path;
 }state_data_t;
 
 // NOTHING SHALL BE CHANGED AFTER THIS LINE!
