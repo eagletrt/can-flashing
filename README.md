@@ -30,7 +30,7 @@ Where 0x8004000 is the shift address of your project.
 
 This is the start address of your binary in the microcontroller flash.
 
-Before this address you should have the bootloader project.
+The flash of your microcontroller should have the bootloader and then, starting from the address chosen, the actual program.
 
 ## Bootcommander
 

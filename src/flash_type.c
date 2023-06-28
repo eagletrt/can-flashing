@@ -29,10 +29,10 @@ char* flash_type_name(FLASH_TYPE value){
       return "BMS_LV";
     case FLASH_TYPE_BMS_LV_BLT:
       return "BMS_LV_BLT";
-    case FLASH_TYPE_STEERING:
-      return "STEERING";
     case FLASH_TYPE_ECU:
       return "ECU";
+    case FLASH_TYPE_STEERING:
+      return "STEERING";
     default:
       return "\0";
   }
@@ -56,10 +56,10 @@ FLASH_TYPE flash_type_value(const char* name){
     return FLASH_TYPE_BMS_LV;
   }else if (strcmp(name, "BMS_LV_BLT") == 0){
     return FLASH_TYPE_BMS_LV_BLT;
-  }else if (strcmp(name, "STEERING") == 0){
-    return FLASH_TYPE_STEERING;
   }else if (strcmp(name, "ECU") == 0){
     return FLASH_TYPE_ECU;
+  }else if (strcmp(name, "STEERING") == 0){
+    return FLASH_TYPE_STEERING;
   }
   return FLASH_TYPE_COUNT;
 }
@@ -119,15 +119,15 @@ void setup_flash_ids(){
   request_ids[FLASH_TYPE_BMS_LV_BLT] = UINT16_MAX;
   response_ids[FLASH_TYPE_BMS_LV_BLT] = UINT16_MAX;
 
-  tx_ids[FLASH_TYPE_STEERING] = PRIMARY_FLASH_STEERING_RX_FRAME_ID;
-  rx_ids[FLASH_TYPE_STEERING] = PRIMARY_FLASH_STEERING_TX_FRAME_ID;
-  jump_ids[FLASH_TYPE_STEERING] = PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID;
-  request_ids[FLASH_TYPE_STEERING] = UINT16_MAX;
-  response_ids[FLASH_TYPE_STEERING] = UINT16_MAX;
-
   tx_ids[FLASH_TYPE_ECU] = PRIMARY_FLASH_ECU_RX_FRAME_ID;
   rx_ids[FLASH_TYPE_ECU] = PRIMARY_FLASH_ECU_TX_FRAME_ID;
   jump_ids[FLASH_TYPE_ECU] = PRIMARY_ECU_JMP_TO_BLT_FRAME_ID;
   request_ids[FLASH_TYPE_ECU] = UINT16_MAX;
   response_ids[FLASH_TYPE_ECU] = UINT16_MAX;
+
+  tx_ids[FLASH_TYPE_STEERING] = PRIMARY_FLASH_STEERING_RX_FRAME_ID;
+  rx_ids[FLASH_TYPE_STEERING] = PRIMARY_FLASH_STEERING_TX_FRAME_ID;
+  jump_ids[FLASH_TYPE_STEERING] = PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID;
+  request_ids[FLASH_TYPE_STEERING] = UINT16_MAX;
+  response_ids[FLASH_TYPE_STEERING] = UINT16_MAX;
 }

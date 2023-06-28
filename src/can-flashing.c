@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <sys/stat.h>
+#include <argp.h>
 
 #include "inc/flash_type.h"
 #include "inc/flash_fsm.h"
@@ -13,6 +14,8 @@ bool file_exists (char *filename) {
 
 int main(int argc, char** argv){
   printf("CAN flashing\r\n");
+  setup_flash_ids();
+  printf("Updated IDs\n");
 
   state_data_t data = {.flash_device = FLASH_TYPE_COUNT};
 
@@ -21,8 +24,17 @@ int main(int argc, char** argv){
     printf(" can-flashing <device-name> <srec-file>\n");
     printf("\n");
     printf("Supported devices are:\n");
-    for(FLASH_TYPE type = 0; type < FLASH_TYPE_COUNT; type++)
-      printf("  %d -> %s\n", type, flash_type_name(type));
+    for(FLASH_TYPE type = 0; type < FLASH_TYPE_COUNT; type++){
+      printf("  %s \n", flash_type_name(type));
+      printf("    JUMP  | RX    | TX    | REQ    | RESP\n");
+      printf("    0x%03X | 0x%03X | 0x%03X | 0x%03X | 0x%03X\n",
+        jump_ids[type],
+        rx_ids[type],
+        tx_ids[type],
+        request_ids[type],
+        response_ids[type]
+      );
+    }
     
     return EXIT_FAILURE;
   }
@@ -47,7 +59,6 @@ int main(int argc, char** argv){
     return EXIT_FAILURE;
   }
 
-  setup_flash_ids();
   state_t cur_state = STATE_START;
   do {
     cur_state = run_state(cur_state, &data);
