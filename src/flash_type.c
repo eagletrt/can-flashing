@@ -25,6 +25,8 @@ char* flash_type_name(FLASH_TYPE value){
       return "BMS_CELLBOARD_4";
     case FLASH_TYPE_BMS_CELLBOARD_5:
       return "BMS_CELLBOARD_5";
+    case FLASH_TYPE_BMS_CELLBOARD_ALL:
+      return "BMS_CELLBOARD_ALL";
     case FLASH_TYPE_BMS_LV:
       return "BMS_LV";
     case FLASH_TYPE_BMS_LV_BLT:
@@ -52,6 +54,8 @@ FLASH_TYPE flash_type_value(const char* name){
     return FLASH_TYPE_BMS_CELLBOARD_4;
   }else if (strcmp(name, "BMS_CELLBOARD_5") == 0){
     return FLASH_TYPE_BMS_CELLBOARD_5;
+  }else if (strcmp(name, "BMS_CELLBOARD_ALL") == 0){
+    return FLASH_TYPE_BMS_CELLBOARD_ALL;
   }else if (strcmp(name, "BMS_LV") == 0){
     return FLASH_TYPE_BMS_LV;
   }else if (strcmp(name, "BMS_LV_BLT") == 0){
@@ -106,6 +110,12 @@ void setup_flash_ids(){
   jump_ids[FLASH_TYPE_BMS_CELLBOARD_5] = PRIMARY_HV_CAN_FORWARD_FRAME_ID;
   request_ids[FLASH_TYPE_BMS_CELLBOARD_5] = UINT16_MAX;
   response_ids[FLASH_TYPE_BMS_CELLBOARD_5] = UINT16_MAX;
+
+  tx_ids[FLASH_TYPE_BMS_CELLBOARD_ALL] = UINT16_MAX;
+  rx_ids[FLASH_TYPE_BMS_CELLBOARD_ALL] = UINT16_MAX;
+  jump_ids[FLASH_TYPE_BMS_CELLBOARD_ALL] = PRIMARY_HV_CAN_FORWARD_FRAME_ID;
+  request_ids[FLASH_TYPE_BMS_CELLBOARD_ALL] = UINT16_MAX;
+  response_ids[FLASH_TYPE_BMS_CELLBOARD_ALL] = UINT16_MAX;
   
   tx_ids[FLASH_TYPE_BMS_LV] = PRIMARY_FLASH_BMS_LV_RX_FRAME_ID;
   rx_ids[FLASH_TYPE_BMS_LV] = PRIMARY_FLASH_BMS_LV_TX_FRAME_ID;

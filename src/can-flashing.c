@@ -59,11 +59,20 @@ int main(int argc, char** argv){
     return EXIT_FAILURE;
   }
 
-  state_t cur_state = STATE_START;
-  do {
-    cur_state = run_state(cur_state, &data);
-  } while (cur_state != STATE_END);
-  run_state(cur_state, NULL);
+  int loop_times = 1;
+  if(data.flash_device == FLASH_TYPE_BMS_CELLBOARD_ALL){
+    data.flash_device = FLASH_TYPE_BMS_CELLBOARD_0;
+    loop_times = 6;
+  }
+
+  for(int i = 0; i < loop_times; ++i){
+    data.flash_device ++;
+    state_t cur_state = STATE_START;
+    do {
+      cur_state = run_state(cur_state, &data);
+    } while (cur_state != STATE_END);
+    run_state(cur_state, NULL);
+  }
 
   return EXIT_SUCCESS;
 }
