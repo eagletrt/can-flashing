@@ -66,12 +66,15 @@ int main(int argc, char** argv){
   }
 
   for(int i = 0; i < loop_times; ++i){
-    data.flash_device ++;
+    printf("\nFlashing device: %s\n\n", flash_type_name(data.flash_device));
+    
     state_t cur_state = STATE_START;
     do {
       cur_state = run_state(cur_state, &data);
     } while (cur_state != STATE_END);
     run_state(cur_state, NULL);
+
+    data.flash_device ++;
   }
 
   return EXIT_SUCCESS;
