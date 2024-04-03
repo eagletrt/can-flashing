@@ -256,13 +256,27 @@ state_t do_flashing(state_data_t *data) {
   }
 
   uint8_t message_data[8] = {0};
-  if (data->flash_device == FLASH_TYPE_BMS_CELLBOARD_0 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_1 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_2 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_3 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_4 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_5) {
-    message_data[0] = 0x01;
+  if (data->flash_device == FLASH_TYPE_BMS_HV) {
+    primary_hv_jmp_to_blt_converted_t pack_conv;
+    pack_conv.cellboard_id = 0;
+    pack_conv.forward = false;
+    primary_hv_jmp_to_blt_t pack_raw;
+    primary_hv_jmp_to_blt_conversion_to_raw_struct(&pack_raw, &pack_conv);
+    primary_hv_jmp_to_blt_pack(message_data, &pack_raw,
+                               PRIMARY_HV_JMP_TO_BLT_BYTE_SIZE);
+  } else if (data->flash_device == FLASH_TYPE_BMS_CELLBOARD_0 ||
+             data->flash_device == FLASH_TYPE_BMS_CELLBOARD_1 ||
+             data->flash_device == FLASH_TYPE_BMS_CELLBOARD_2 ||
+             data->flash_device == FLASH_TYPE_BMS_CELLBOARD_3 ||
+             data->flash_device == FLASH_TYPE_BMS_CELLBOARD_4 ||
+             data->flash_device == FLASH_TYPE_BMS_CELLBOARD_5) {
+    primary_hv_jmp_to_blt_converted_t pack_conv;
+    pack_conv.cellboard_id = (data->flash_device - FLASH_TYPE_BMS_CELLBOARD_0);
+    pack_conv.forward = true;
+    primary_hv_jmp_to_blt_t pack_raw;
+    primary_hv_jmp_to_blt_conversion_to_raw_struct(&pack_raw, &pack_conv);
+    primary_hv_jmp_to_blt_pack(message_data, &pack_raw,
+                               PRIMARY_HV_JMP_TO_BLT_BYTE_SIZE);
   }
   can_send(jump_ids[data->flash_device], (char *)message_data, 8, &data->can);
 
