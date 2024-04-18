@@ -1,6 +1,7 @@
 #include "inc/flash_type.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include "can/lib/primary/primary_network.h"
 
@@ -36,6 +37,18 @@ char* flash_type_name(FLASH_TYPE value) {
       return "ECU";
     case FLASH_TYPE_STEERING:
       return "STEERING";
+    case FLASH_TYPE_ACQUISINATOR_0:
+      return "FLASH_TYPE_ACQUISINATOR_0";
+    case FLASH_TYPE_ACQUISINATOR_1:
+      return "FLASH_TYPE_ACQUISINATOR_1";
+    case FLASH_TYPE_ACQUISINATOR_2:
+      return "FLASH_TYPE_ACQUISINATOR_2";
+    case FLASH_TYPE_ACQUISINATOR_3:
+      return "FLASH_TYPE_ACQUISINATOR_3";
+    case FLASH_TYPE_ACQUISINATOR_4:
+      return "FLASH_TYPE_ACQUISINATOR_4";
+    case FLASH_TYPE_ACQUISINATOR_5:
+      return "FLASH_TYPE_ACQUISINATOR_5";
     default:
       return "\0";
   }
@@ -65,6 +78,18 @@ FLASH_TYPE flash_type_value(const char* name) {
     return FLASH_TYPE_ECU;
   } else if (strcmp(name, "STEERING") == 0) {
     return FLASH_TYPE_STEERING;
+  } else if (strcmp(name, "FLASH_TYPE_ACQUISINATOR_0")) {
+    return FLASH_TYPE_ACQUISINATOR_0;
+  } else if (strcmp(name, "FLASH_TYPE_ACQUISINATOR_1")) {
+    return FLASH_TYPE_ACQUISINATOR_1;
+  } else if (strcmp(name, "FLASH_TYPE_ACQUISINATOR_2")) {
+    return FLASH_TYPE_ACQUISINATOR_2;
+  } else if (strcmp(name, "FLASH_TYPE_ACQUISINATOR_3")) {
+    return FLASH_TYPE_ACQUISINATOR_3;
+  } else if (strcmp(name, "FLASH_TYPE_ACQUISINATOR_4")) {
+    return FLASH_TYPE_ACQUISINATOR_4;
+  } else if (strcmp(name, "FLASH_TYPE_ACQUISINATOR_5")) {
+    return FLASH_TYPE_ACQUISINATOR_5;
   }
   return FLASH_TYPE_COUNT;
 }
@@ -141,4 +166,83 @@ void setup_flash_ids() {
   jump_ids[FLASH_TYPE_STEERING] = PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID;
   request_ids[FLASH_TYPE_STEERING] = UINT16_MAX;
   response_ids[FLASH_TYPE_STEERING] = UINT16_MAX;
+
+  tx_ids[FLASH_TYPE_ACQUISINATOR_0] = PRIMARY_STEERING_WHEEL_FLASH_RX_FRAME_ID;
+  rx_ids[FLASH_TYPE_ACQUISINATOR_0] = PRIMARY_STEERING_WHEEL_FLASH_TX_FRAME_ID;
+  jump_ids[FLASH_TYPE_ACQUISINATOR_0] = PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID;
+  request_ids[FLASH_TYPE_ACQUISINATOR_0] = UINT16_MAX;
+  response_ids[FLASH_TYPE_ACQUISINATOR_0] = UINT16_MAX;
+
+  tx_ids[FLASH_TYPE_ACQUISINATOR_1] = PRIMARY_STEERING_WHEEL_FLASH_RX_FRAME_ID;
+  rx_ids[FLASH_TYPE_ACQUISINATOR_1] = PRIMARY_STEERING_WHEEL_FLASH_TX_FRAME_ID;
+  jump_ids[FLASH_TYPE_ACQUISINATOR_1] = PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID;
+  request_ids[FLASH_TYPE_ACQUISINATOR_1] = UINT16_MAX;
+  response_ids[FLASH_TYPE_ACQUISINATOR_1] = UINT16_MAX;
+
+  tx_ids[FLASH_TYPE_ACQUISINATOR_2] = PRIMARY_STEERING_WHEEL_FLASH_RX_FRAME_ID;
+  rx_ids[FLASH_TYPE_ACQUISINATOR_2] = PRIMARY_STEERING_WHEEL_FLASH_TX_FRAME_ID;
+  jump_ids[FLASH_TYPE_ACQUISINATOR_2] = PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID;
+  request_ids[FLASH_TYPE_ACQUISINATOR_2] = UINT16_MAX;
+  response_ids[FLASH_TYPE_ACQUISINATOR_2] = UINT16_MAX;
+
+  tx_ids[FLASH_TYPE_ACQUISINATOR_3] = PRIMARY_STEERING_WHEEL_FLASH_RX_FRAME_ID;
+  rx_ids[FLASH_TYPE_ACQUISINATOR_3] = PRIMARY_STEERING_WHEEL_FLASH_TX_FRAME_ID;
+  jump_ids[FLASH_TYPE_ACQUISINATOR_3] = PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID;
+  request_ids[FLASH_TYPE_ACQUISINATOR_3] = UINT16_MAX;
+  response_ids[FLASH_TYPE_ACQUISINATOR_3] = UINT16_MAX;
+
+  tx_ids[FLASH_TYPE_ACQUISINATOR_4] = PRIMARY_STEERING_WHEEL_FLASH_RX_FRAME_ID;
+  rx_ids[FLASH_TYPE_ACQUISINATOR_4] = PRIMARY_STEERING_WHEEL_FLASH_TX_FRAME_ID;
+  jump_ids[FLASH_TYPE_ACQUISINATOR_4] = PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID;
+  request_ids[FLASH_TYPE_ACQUISINATOR_4] = UINT16_MAX;
+  response_ids[FLASH_TYPE_ACQUISINATOR_4] = UINT16_MAX;
+
+  tx_ids[FLASH_TYPE_ACQUISINATOR_5] = PRIMARY_STEERING_WHEEL_FLASH_RX_FRAME_ID;
+  rx_ids[FLASH_TYPE_ACQUISINATOR_5] = PRIMARY_STEERING_WHEEL_FLASH_TX_FRAME_ID;
+  jump_ids[FLASH_TYPE_ACQUISINATOR_5] = PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID;
+  request_ids[FLASH_TYPE_ACQUISINATOR_5] = UINT16_MAX;
+  response_ids[FLASH_TYPE_ACQUISINATOR_5] = UINT16_MAX;
 }
+
+
+bool is_can_primary(FLASH_TYPE flash_device) {
+  switch (flash_device) {
+  case FLASH_TYPE_BMS_CELLBOARD_0:
+    return true;
+  case FLASH_TYPE_BMS_CELLBOARD_1:
+    return true;
+  case FLASH_TYPE_BMS_CELLBOARD_2:
+    return true;
+  case FLASH_TYPE_BMS_CELLBOARD_3:
+    return true;
+  case FLASH_TYPE_BMS_CELLBOARD_4:
+    return true;
+  case FLASH_TYPE_BMS_CELLBOARD_5:
+    return true;
+  case FLASH_TYPE_BMS_CELLBOARD_ALL:
+    return true;
+  case FLASH_TYPE_BMS_LV:
+    return true;
+  case FLASH_TYPE_BMS_LV_BLT:
+    return true;
+  case FLASH_TYPE_ECU:
+    return true;
+  case FLASH_TYPE_STEERING:
+    return true;
+  case FLASH_TYPE_ACQUISINATOR_0:
+    return false;
+  case FLASH_TYPE_ACQUISINATOR_1:
+    return false;
+  case FLASH_TYPE_ACQUISINATOR_2:
+    return false;
+  case FLASH_TYPE_ACQUISINATOR_3:
+    return false;
+  case FLASH_TYPE_ACQUISINATOR_4:
+    return false;
+  case FLASH_TYPE_ACQUISINATOR_5:
+    return false;
+  default:
+      assert(false && "Can interface is not specified");
+  }
+}
+

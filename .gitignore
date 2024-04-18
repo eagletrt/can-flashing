@@ -56,3 +56,7 @@ build/
 bin/
 binaries/
 *.srec
+
+BootCommander
+.vscode/**
+

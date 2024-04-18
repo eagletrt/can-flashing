@@ -18,6 +18,7 @@ The finite state machine has:
 #include <time.h>
 
 #include "can/lib/primary/primary_network.h"
+#include "can/lib/secondary/secondary_network.h"
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
@@ -80,8 +81,12 @@ state_t do_setup_can(state_data_t *data) {
   printf("[FSM] In state setup_can\n");
   /* Your Code Here */
 
-  can_init("can1", &data->can);
-
+  if (is_can_primary(data->flash_device)) {
+    can_init("can1", &data->can);
+  } else {
+    can_init("can0", &data->can);
+  }
+  
   if (can_open_socket(&data->can) < 0)
     next_state = STATE_ERROR;
   else
@@ -277,6 +282,17 @@ state_t do_flashing(state_data_t *data) {
     primary_hv_jmp_to_blt_conversion_to_raw_struct(&pack_raw, &pack_conv);
     primary_hv_jmp_to_blt_pack(message_data, &pack_raw,
                                PRIMARY_HV_JMP_TO_BLT_BYTE_SIZE);
+  } else if (data->flash_device == FLASH_TYPE_ACQUISINATOR_0 ||
+             data->flash_device == FLASH_TYPE_ACQUISINATOR_1 ||
+             data->flash_device == FLASH_TYPE_ACQUISINATOR_2 ||
+             data->flash_device == FLASH_TYPE_ACQUISINATOR_3 ||
+             data->flash_device == FLASH_TYPE_ACQUISINATOR_4 ||
+             data->flash_device == FLASH_TYPE_ACQUISINATOR_5) {
+    secondary_acquisinator_jmp_to_blt_converted_t pack_conv;
+    pack_conv.acquisinatore_id = (data->flash_device - FLASH_TYPE_ACQUISINATOR_0);
+    secondary_acquisinator_jmp_to_blt_t pack_raw;
+    secondary_acquisinator_jmp_to_blt_conversion_to_raw_struct(&pack_raw, &pack_conv);
+    secondary_acquisinator_jmp_to_blt_pack(message_data, &pack_raw, SECONDARY_ACQUISINATOR_JMP_TO_BLT_FRAME_ID);
   }
   can_send(jump_ids[data->flash_device], (char *)message_data, 8, &data->can);
 
