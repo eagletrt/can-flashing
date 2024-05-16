@@ -282,12 +282,8 @@ state_t do_flashing(state_data_t *data) {
     primary_hv_jmp_to_blt_conversion_to_raw_struct(&pack_raw, &pack_conv);
     primary_hv_jmp_to_blt_pack(message_data, &pack_raw,
                                PRIMARY_HV_JMP_TO_BLT_BYTE_SIZE);
-  } else if (data->flash_device == FLASH_TYPE_ACQUISINATOR_0 ||
-             data->flash_device == FLASH_TYPE_ACQUISINATOR_1 ||
-             data->flash_device == FLASH_TYPE_ACQUISINATOR_2 ||
-             data->flash_device == FLASH_TYPE_ACQUISINATOR_3 ||
-             data->flash_device == FLASH_TYPE_ACQUISINATOR_4 ||
-             data->flash_device == FLASH_TYPE_ACQUISINATOR_5) {
+  } else if (data->flash_device >= FLASH_TYPE_ACQUISINATOR_0 &&
+             data->flash_device <= FLASH_TYPE_ACQUISINATOR_31) {
     secondary_acquisinator_jmp_to_blt_converted_t pack_conv;
     pack_conv.acquisinatore_id = (data->flash_device - FLASH_TYPE_ACQUISINATOR_0);
     secondary_acquisinator_jmp_to_blt_t pack_raw;
@@ -299,8 +295,7 @@ state_t do_flashing(state_data_t *data) {
   // bootcommander
   char buff[COMMAND_BUFER_SIZE];
   snprintf(buff, COMMAND_BUFER_SIZE,
-           "/home/control/can-test/Host/bootcommander -t=xcp_can -d=%s "
-           "-b=1000000 -tid=%x -rid=%x %s",
+           "bootcommander -t=xcp_can -d=%s -b=1000000 -tid=%x -rid=%x %s",
            can_get_device(&data->can), tx_ids[data->flash_device],
            rx_ids[data->flash_device], data->binary_path);
   printf("[FSM] launching bootcommander:\n%s\n", buff);
