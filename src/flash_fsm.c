@@ -284,6 +284,7 @@ state_t do_flashing(state_data_t *data) {
                                PRIMARY_HV_JMP_TO_BLT_BYTE_SIZE);
   } else if (data->flash_device >= FLASH_TYPE_ACQUISINATOR_0 &&
              data->flash_device <= FLASH_TYPE_ACQUISINATOR_31) {
+    // TODO NON MANDA IL VALORE GIUSTO DEOBOEA manda sempre ZERO
     secondary_acquisinator_jmp_to_blt_converted_t pack_conv;
     pack_conv.acquisinatore_id = (data->flash_device - FLASH_TYPE_ACQUISINATOR_0);
     secondary_acquisinator_jmp_to_blt_t pack_raw;
