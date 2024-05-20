@@ -284,12 +284,11 @@ state_t do_flashing(state_data_t *data) {
                                PRIMARY_HV_JMP_TO_BLT_BYTE_SIZE);
   } else if (data->flash_device >= FLASH_TYPE_ACQUISINATOR_0 &&
              data->flash_device <= FLASH_TYPE_ACQUISINATOR_31) {
-    // TODO NON MANDA IL VALORE GIUSTO DEOBOEA manda sempre ZERO
     secondary_acquisinator_jmp_to_blt_converted_t pack_conv;
     pack_conv.acquisinatore_id = (data->flash_device - FLASH_TYPE_ACQUISINATOR_0);
     secondary_acquisinator_jmp_to_blt_t pack_raw;
     secondary_acquisinator_jmp_to_blt_conversion_to_raw_struct(&pack_raw, &pack_conv);
-    secondary_acquisinator_jmp_to_blt_pack(message_data, &pack_raw, SECONDARY_ACQUISINATOR_JMP_TO_BLT_FRAME_ID);
+    secondary_acquisinator_jmp_to_blt_pack(message_data, &pack_raw, SECONDARY_ACQUISINATOR_JMP_TO_BLT_BYTE_SIZE);
   }
   can_send(jump_ids[data->flash_device], (char *)message_data, 8, &data->can);
 
