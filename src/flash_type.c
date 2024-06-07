@@ -468,6 +468,7 @@ void setup_flash_ids() {
 
 bool is_can_primary(FLASH_TYPE flash_device) {
   switch (flash_device) {
+  case FLASH_TYPE_BMS_HV:
   case FLASH_TYPE_BMS_CELLBOARD_0:
   case FLASH_TYPE_BMS_CELLBOARD_1:
   case FLASH_TYPE_BMS_CELLBOARD_2:
