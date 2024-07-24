@@ -82,9 +82,9 @@ state_t do_setup_can(state_data_t *data) {
   /* Your Code Here */
 
   if (is_can_primary(data->flash_device)) {
-    can_init("can1", &data->can);
-  } else {
     can_init("can0", &data->can);
+  } else {
+    can_init("can1", &data->can);
   }
   
   if (can_open_socket(&data->can) < 0)
@@ -294,10 +294,12 @@ state_t do_flashing(state_data_t *data) {
 
   // bootcommander
   char buff[COMMAND_BUFER_SIZE];
-  snprintf(buff, COMMAND_BUFER_SIZE,
-           "bootcommander -t=xcp_can -d=%s -b=1000000 -tid=%x -rid=%x %s",
-           can_get_device(&data->can), tx_ids[data->flash_device],
-           rx_ids[data->flash_device], data->binary_path);
+  snprintf(buff, COMMAND_BUFER_SIZE, "/home/control/can-flashing/bootcommander -t=xcp_can -t6=200 -d=%s -b=1000000 -tid=%x -rid=%x %s",
+    can_get_device(&data->can),
+    tx_ids[data->flash_device],
+    rx_ids[data->flash_device],
+    data->binary_path
+  );
   printf("[FSM] launching bootcommander:\n%s\n", buff);
   fflush(stdout);
   usleep(1000);
