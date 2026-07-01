@@ -17,8 +17,8 @@ The finite state machine has:
 #include <sys/time.h>
 #include <time.h>
 
-#include "can/lib/primary/primary_network.h"
-#include "can/lib/secondary/secondary_network.h"
+#include "primary/can-primary-api.h"
+#include "primary/can-primary.h"
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
@@ -29,14 +29,14 @@ const char *state_names[] = {"start", "setup_can",  "error",    "flash_request",
 
 // List of state functions
 state_func_t *const state_table[NUM_STATES] = {
-    do_start,          // in state start
-    do_setup_can,      // in state setup_can
-    do_error,          // in state error
-    do_flash_request,  // in state flash_request
-    do_end,            // in state end
-    do_flash_wait,     // in state flash_wait
-    do_flashing,       // in state flashing
-    do_success,        // in state success
+    do_start,         // in state start
+    do_setup_can,     // in state setup_can
+    do_error,         // in state error
+    do_flash_request, // in state flash_request
+    do_end,           // in state end
+    do_flash_wait,    // in state flash_wait
+    do_flashing,      // in state flashing
+    do_success,       // in state success
 };
 // No transition functions
 
@@ -62,12 +62,12 @@ state_t do_start(state_data_t *data) {
   /* Your Code Here */
 
   switch (next_state) {
-    case STATE_SETUP_CAN:
-      break;
-    default:
-      printf("[FSM] Cannot pass from start to %s, remaining in this state\n",
-             state_names[next_state]);
-      next_state = NO_CHANGE;
+  case STATE_SETUP_CAN:
+    break;
+  default:
+    printf("[FSM] Cannot pass from start to %s, remaining in this state\n",
+           state_names[next_state]);
+    next_state = NO_CHANGE;
   }
 
   return next_state;
@@ -86,21 +86,20 @@ state_t do_setup_can(state_data_t *data) {
   } else {
     can_init("can1", &data->can);
   }
-  
+
   if (can_open_socket(&data->can) < 0)
     next_state = STATE_ERROR;
   else
     next_state = STATE_FLASH_REQUEST;
 
   switch (next_state) {
-    case STATE_ERROR:
-    case STATE_FLASH_REQUEST:
-      break;
-    default:
-      printf(
-          "[FSM] Cannot pass from setup_can to %s, remaining in this state\n",
-          state_names[next_state]);
-      next_state = NO_CHANGE;
+  case STATE_ERROR:
+  case STATE_FLASH_REQUEST:
+    break;
+  default:
+    printf("[FSM] Cannot pass from setup_can to %s, remaining in this state\n",
+           state_names[next_state]);
+    next_state = NO_CHANGE;
   }
 
   return next_state;
@@ -115,12 +114,12 @@ state_t do_error(state_data_t *data) {
   /* Your Code Here */
 
   switch (next_state) {
-    case STATE_END:
-      break;
-    default:
-      printf("[FSM] Cannot pass from error to %s, remaining in this state\n",
-             state_names[next_state]);
-      next_state = NO_CHANGE;
+  case STATE_END:
+    break;
+  default:
+    printf("[FSM] Cannot pass from error to %s, remaining in this state\n",
+           state_names[next_state]);
+    next_state = NO_CHANGE;
   }
 
   return next_state;
@@ -149,16 +148,15 @@ state_t do_flash_request(state_data_t *data) {
   }
 
   switch (next_state) {
-    case STATE_ERROR:
-    case STATE_FLASHING:
-    case STATE_FLASH_WAIT:
-      break;
-    default:
-      printf(
-          "[FSM] Cannot pass from flash_request to %s, remaining in this "
-          "state\n",
-          state_names[next_state]);
-      next_state = NO_CHANGE;
+  case STATE_ERROR:
+  case STATE_FLASHING:
+  case STATE_FLASH_WAIT:
+    break;
+  default:
+    printf("[FSM] Cannot pass from flash_request to %s, remaining in this "
+           "state\n",
+           state_names[next_state]);
+    next_state = NO_CHANGE;
   }
 
   return next_state;
@@ -173,12 +171,12 @@ state_t do_end(state_data_t *data) {
   /* Your Code Here */
 
   switch (next_state) {
-    case NO_CHANGE:
-      break;
-    default:
-      printf("[FSM] Cannot pass from end to %s, remaining in this state\n",
-             state_names[next_state]);
-      next_state = NO_CHANGE;
+  case NO_CHANGE:
+    break;
+  default:
+    printf("[FSM] Cannot pass from end to %s, remaining in this state\n",
+           state_names[next_state]);
+    next_state = NO_CHANGE;
   }
 
   return next_state;
@@ -233,16 +231,15 @@ state_t do_flash_wait(state_data_t *data) {
 
 end:
   switch (next_state) {
-    case NO_CHANGE:
-    case STATE_ERROR:
-    case STATE_FLASH_WAIT:
-    case STATE_FLASHING:
-      break;
-    default:
-      printf(
-          "[FSM] Cannot pass from flash_wait to %s, remaining in this state\n",
-          state_names[next_state]);
-      next_state = NO_CHANGE;
+  case NO_CHANGE:
+  case STATE_ERROR:
+  case STATE_FLASH_WAIT:
+  case STATE_FLASHING:
+    break;
+  default:
+    printf("[FSM] Cannot pass from flash_wait to %s, remaining in this state\n",
+           state_names[next_state]);
+    next_state = NO_CHANGE;
   }
 
   return next_state;
@@ -260,72 +257,62 @@ state_t do_flashing(state_data_t *data) {
     goto end;
   }
 
+  union CanPrimaryMessages message;
   uint8_t message_data[8] = {0};
   if (data->flash_device == FLASH_TYPE_BMS_HV) {
-    primary_hv_flash_converted_t pack_conv;
-    pack_conv.start = 1;
-    pack_conv.cellboard_id = 0;
-    pack_conv.forward = false;
-    primary_hv_flash_t pack_raw;
-    primary_hv_flash_conversion_to_raw_struct(&pack_raw, &pack_conv);
-    primary_hv_flash_pack(message_data, &pack_raw,
-                               PRIMARY_HV_FLASH_BYTE_SIZE);
+    message.hv_bms_flash.forward_bool = false;
+    message.hv_bms_flash.cellboardid = 0;
   } else if (data->flash_device == FLASH_TYPE_BMS_CELLBOARD_0 ||
              data->flash_device == FLASH_TYPE_BMS_CELLBOARD_1 ||
              data->flash_device == FLASH_TYPE_BMS_CELLBOARD_2 ||
              data->flash_device == FLASH_TYPE_BMS_CELLBOARD_3 ||
              data->flash_device == FLASH_TYPE_BMS_CELLBOARD_4 ||
              data->flash_device == FLASH_TYPE_BMS_CELLBOARD_5) {
-    primary_hv_flash_converted_t pack_conv;
-    pack_conv.start = 1;
-    pack_conv.cellboard_id = (data->flash_device - FLASH_TYPE_BMS_CELLBOARD_0);
-    pack_conv.forward = true;
-    primary_hv_flash_t pack_raw;
-    primary_hv_flash_conversion_to_raw_struct(&pack_raw, &pack_conv);
-    primary_hv_flash_pack(message_data, &pack_raw,
-                               PRIMARY_HV_FLASH_BYTE_SIZE);
-  } else if (data->flash_device >= FLASH_TYPE_ACQUISINATOR_0 &&
-             data->flash_device <= FLASH_TYPE_ACQUISINATOR_31) {
-    secondary_acquisinator_jmp_to_blt_converted_t pack_conv;
-    pack_conv.acquisinatore_id = (data->flash_device - FLASH_TYPE_ACQUISINATOR_0);
-    secondary_acquisinator_jmp_to_blt_t pack_raw;
-    secondary_acquisinator_jmp_to_blt_conversion_to_raw_struct(&pack_raw, &pack_conv);
-    secondary_acquisinator_jmp_to_blt_pack(message_data, &pack_raw, SECONDARY_ACQUISINATOR_JMP_TO_BLT_BYTE_SIZE);
+    message.hv_bms_flash.forward_bool = true;
+    message.hv_bms_flash.cellboardid =
+        (data->flash_device - FLASH_TYPE_BMS_CELLBOARD_0);
   }
-  can_send(jump_ids[data->flash_device], (char *)message_data, 8, &data->can);
-
-  // bootcommander
-  char buff[COMMAND_BUFER_SIZE];
-  snprintf(buff, COMMAND_BUFER_SIZE, "/home/control/can-flashing/bootcommander -t=xcp_can -t6=200 -d=%s -b=1000000 -tid=%x -rid=%x %s",
-    can_get_device(&data->can),
-    tx_ids[data->flash_device],
-    rx_ids[data->flash_device],
-    data->binary_path
-  );
-  printf("[FSM] launching bootcommander:\n%s\n", buff);
-  fflush(stdout);
-  usleep(1000);
-  system(buff);
-
-  if (data->flash_device == FLASH_TYPE_BMS_CELLBOARD_0 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_1 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_2 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_3 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_4 ||
-      data->flash_device == FLASH_TYPE_BMS_CELLBOARD_5) {
-    message_data[0] = 0x00;
+  int serialize_byte_count = can_primary_api_serialize_from_id(
+      jump_ids[data->flash_device], &message, message_data);
+  if (serialize_byte_count < 0) {
+    next_state = STATE_ERROR;
+  } else {
     can_send(jump_ids[data->flash_device], (char *)message_data, 8, &data->can);
+
+    // bootcommander
+    char buff[COMMAND_BUFER_SIZE];
+    snprintf(
+        buff, COMMAND_BUFER_SIZE,
+        "/home/control/can-flashing/bootcommander -t=xcp_can -t6=200 -d=%s "
+        "-b=1000000 -tid=%x -rid=%x %s",
+        can_get_device(&data->can), tx_ids[data->flash_device],
+        rx_ids[data->flash_device], data->binary_path);
+    printf("[FSM] launching bootcommander:\n%s\n", buff);
+    fflush(stdout);
+    usleep(1000);
+    system(buff);
+
+    if (data->flash_device == FLASH_TYPE_BMS_CELLBOARD_0 ||
+        data->flash_device == FLASH_TYPE_BMS_CELLBOARD_1 ||
+        data->flash_device == FLASH_TYPE_BMS_CELLBOARD_2 ||
+        data->flash_device == FLASH_TYPE_BMS_CELLBOARD_3 ||
+        data->flash_device == FLASH_TYPE_BMS_CELLBOARD_4 ||
+        data->flash_device == FLASH_TYPE_BMS_CELLBOARD_5) {
+      message_data[0] = 0x00;
+      can_send(jump_ids[data->flash_device], (char *)message_data, 8,
+               &data->can);
+    }
   }
 
 end:
   switch (next_state) {
-    case STATE_ERROR:
-    case STATE_SUCCESS:
-      break;
-    default:
-      printf("[FSM] Cannot pass from flashing to %s, remaining in this state\n",
-             state_names[next_state]);
-      next_state = NO_CHANGE;
+  case STATE_ERROR:
+  case STATE_SUCCESS:
+    break;
+  default:
+    printf("[FSM] Cannot pass from flashing to %s, remaining in this state\n",
+           state_names[next_state]);
+    next_state = NO_CHANGE;
   }
 
   return next_state;
@@ -340,12 +327,12 @@ state_t do_success(state_data_t *data) {
   /* Your Code Here */
 
   switch (next_state) {
-    case STATE_END:
-      break;
-    default:
-      printf("[FSM] Cannot pass from success to %s, remaining in this state\n",
-             state_names[next_state]);
-      next_state = NO_CHANGE;
+  case STATE_END:
+    break;
+  default:
+    printf("[FSM] Cannot pass from success to %s, remaining in this state\n",
+           state_names[next_state]);
+    next_state = NO_CHANGE;
   }
 
   return next_state;
@@ -367,7 +354,8 @@ state_t do_success(state_data_t *data) {
 
 state_t run_state(state_t cur_state, state_data_t *data) {
   state_t new_state = state_table[cur_state](data);
-  if (new_state == NO_CHANGE) new_state = cur_state;
+  if (new_state == NO_CHANGE)
+    new_state = cur_state;
   return new_state == NO_CHANGE ? cur_state : new_state;
 };
 

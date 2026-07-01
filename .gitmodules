@@ -1,3 +1,9 @@
 [submodule "thirdparty/srec"]
 	path = thirdparty/srec
 	url = git@github.com:arkku/srec.git
+[submodule "thirdparty/can"]
+	path = thirdparty/can
+	url = git@github.com:eagletrt/libcan-sw.git
+[submodule "thirdparty/eagletrt"]
+	path = thirdparty/eagletrt
+	url = git@github.com:eagletrt/libeagletrt-sw.git
